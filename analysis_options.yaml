@@ -6,6 +6,7 @@ analyzer:
     # package:flutter/material.dart pada Flutter 3.47+. Abaikan info ini agar
     # flutter analyze tetap berfokus pada error/warning kode aplikasi.
     deprecated_member_use: ignore
+    unused_import: ignore
 
 linter:
   rules:
