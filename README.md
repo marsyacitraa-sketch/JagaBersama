@@ -39,8 +39,9 @@ Aplikasi Android berbasis **Flutter (Material Design 3)** dan **Supabase (Free T
 2. Buka repositori di GitHub → **Settings → Secrets and variables → Actions → New repository secret**:
    - `SUPABASE_URL`: URL proyek Supabase Anda.
    - `SUPABASE_ANON_KEY`: Anon Key proyek Supabase Anda.
-3. Buka tab **Actions** → pilih workflow **Build JagaBersama Android APK** (atau jalankan manual via **Run workflow**).
-4. Setelah selesai, unduh file **`jagabersama-release-apk`** (`app-release.apk`) di bagian **Artifacts** pada halaman workflow run.
+3. Buka tab **Actions** → pilih workflow **Build APK Android** (atau jalankan manual via **Run workflow**).
+4. Setelah selesai, unduh file **`aplikasi-android-apk`** (`app-release.apk`) di bagian **Artifacts** pada halaman workflow run.
+5. Untuk merilis APK secara otomatis ke halaman **Releases**, buat dan push tag berawalan `v` (contoh: `git tag v1.0.0 && git push origin v1.0.0`).
 
 ---
 

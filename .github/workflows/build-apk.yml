@@ -1,15 +1,19 @@
-name: Build JagaBersama Android APK
+name: Build APK Android
 
 on:
   push:
     branches: [ "main", "master" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build_apk:
-    name: Analyze, Test & Build APK
+    name: Build Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +32,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Sinkronisasi Gradle Wrapper & Mipmap Bawaan jika Belum Ada
+      - name: Sinkronisasi Gradle Wrapper & Mipmap jika Belum Ada
         run: |
           if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -d android/app/src/main/res/mipmap-hdpi ]; then
             flutter create --platforms=android --org com.jagabersama --project-name jaga_bersama /tmp/fl_tpl
@@ -46,23 +50,29 @@ jobs:
       - name: Analyze Code
         run: flutter analyze
 
-      - name: Run Unit & Widget Tests
+      - name: Run Tests
         run: flutter test
 
       - name: Build Release APK
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           flutter build apk --release \
-            --dart-define=SUPABASE_URL="${SUPABASE_URL:-https://placeholder.supabase.co}" \
-            --dart-define=SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-placeholder-anon-key}" \
-            --build-name=1.0.${{ github.run_number }} \
-            --build-number=${{ github.run_number }}
+            --dart-define=SUPABASE_URL="${{ secrets.SUPABASE_URL }}" \
+            --dart-define=SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+          if [ ! -f build/app/outputs/apk/release/app-release.apk ] && [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            mkdir -p build/app/outputs/apk/release
+            cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/apk/release/app-release.apk
+          fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jagabersama-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: aplikasi-android-apk
+          path: build/app/outputs/apk/release/app-release.apk
           retention-days: 30
+
+      - name: Buat GitHub Release Otomatis
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/apk/release/app-release.apk
+          generate_release_notes: true
