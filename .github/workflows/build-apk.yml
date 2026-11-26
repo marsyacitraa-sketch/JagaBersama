@@ -41,6 +41,7 @@ jobs:
             cp -f /tmp/fl_tpl/android/gradlew.bat android/gradlew.bat
             chmod +x android/gradlew
             cp -f /tmp/fl_tpl/android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar
+            cp -f /tmp/fl_tpl/android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties
             cp -rn /tmp/fl_tpl/android/app/src/main/res/mipmap-* android/app/src/main/res/ || true
           fi
 
