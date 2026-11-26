@@ -13,7 +13,7 @@ Future<void> main() async {
   if (AppEnv.isConfigured) {
     await Supabase.initialize(
       url: AppEnv.supabaseUrl,
-      anonKey: AppEnv.supabaseAnonKey,
+      publishableKey: AppEnv.supabaseAnonKey,
     );
   }
 
