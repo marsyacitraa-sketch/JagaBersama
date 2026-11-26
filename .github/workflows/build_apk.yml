@@ -1,0 +1,68 @@
+name: Build JagaBersama Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build_apk:
+    name: Analyze, Test & Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter (Stable)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Sinkronisasi Gradle Wrapper & Mipmap Bawaan jika Belum Ada
+        run: |
+          if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -d android/app/src/main/res/mipmap-hdpi ]; then
+            flutter create --platforms=android --org com.jagabersama --project-name jaga_bersama /tmp/fl_tpl
+            mkdir -p android/gradle/wrapper
+            cp -f /tmp/fl_tpl/android/gradlew android/gradlew
+            cp -f /tmp/fl_tpl/android/gradlew.bat android/gradlew.bat
+            chmod +x android/gradlew
+            cp -f /tmp/fl_tpl/android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar
+            cp -rn /tmp/fl_tpl/android/app/src/main/res/mipmap-* android/app/src/main/res/ || true
+          fi
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Analyze Code
+        run: flutter analyze
+
+      - name: Run Unit & Widget Tests
+        run: flutter test
+
+      - name: Build Release APK
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL="${SUPABASE_URL:-https://placeholder.supabase.co}" \
+            --dart-define=SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-placeholder-anon-key}" \
+            --build-name=1.0.${{ github.run_number }} \
+            --build-number=${{ github.run_number }}
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jagabersama-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
